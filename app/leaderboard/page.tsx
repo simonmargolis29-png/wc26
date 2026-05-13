@@ -30,6 +30,12 @@ export default async function LeaderboardPage() {
 
   const profile = profileResult.data as Profile | null;
   const pickSixRankings = rankingsResult.data ?? [];
+
+  // Pre-tournament: no one has scored yet
+  const tournamentStarted = pickSixRankings.some(
+    e => ((e as { total_points?: number }).total_points ?? 0) > 0
+  );
+
   const ranks = computeRanks(pickSixRankings as { total_points: number }[]);
 
   const myIdx = user
@@ -37,6 +43,7 @@ export default async function LeaderboardPage() {
     : -1;
 
   const myRank = myIdx >= 0 ? ranks[myIdx] : null;
+  const isEntered = myIdx >= 0;
 
   return (
     <div className="min-h-screen">
@@ -48,12 +55,45 @@ export default async function LeaderboardPage() {
           <h1 className="head" style={{ fontSize: 'clamp(40px, 6vw, 72px)' }}>My Golden Six</h1>
           <hr className="programme-rule-strong mt-6 mb-4" />
           <p style={{ color: 'rgba(245,241,232,0.55)', fontSize: 15 }}>
-            One global league. All players ranked by total points.
+            {tournamentStarted
+              ? 'One global league. All players ranked by total points.'
+              : 'One global league. Rankings go live when the first match kicks off.'}
           </p>
         </div>
 
-        {/* Your position — only when logged in and entered */}
-        {myRank !== null && profile && (
+        {/* Pre-tournament banner */}
+        {!tournamentStarted && pickSixRankings.length > 0 && (
+          <div className="programme-card p-5 mb-6 flex items-center gap-4">
+            <div className="shrink-0 flex items-center justify-center" style={{
+              width: 40, height: 40,
+              background: 'rgba(227,58,58,0.12)',
+              border: '1px solid rgba(227,58,58,0.3)',
+              borderRadius: 2,
+            }}>
+              <Star size={18} style={{ color: '#E33A3A' }} />
+            </div>
+            <div>
+              <p className="head" style={{ fontSize: 15 }}>Leaderboard activates 11 June</p>
+              <p className="mono mt-1" style={{ fontSize: 11, color: 'rgba(245,241,232,0.45)', letterSpacing: '0.05em' }}>
+                Points update after every match. Check back at kick-off.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Your entry confirmed banner — pre-tournament only */}
+        {!tournamentStarted && isEntered && profile && (
+          <div className="programme-card p-5 mb-6 flex items-center justify-between">
+            <div>
+              <p className="eyebrow mb-1" style={{ color: 'rgba(245,241,232,0.45)', fontSize: 10 }}>Your entry</p>
+              <p className="head" style={{ fontSize: 20 }}>{profile.first_name} {profile.last_name}</p>
+            </div>
+            <span className="stamp" style={{ color: '#4ADE80' }}>Confirmed</span>
+          </div>
+        )}
+
+        {/* Your position — live tournament only */}
+        {tournamentStarted && myRank !== null && profile && (
           <div className="programme-card p-5 mb-6 flex items-center justify-between">
             <div>
               <p className="eyebrow mb-1" style={{ color: 'rgba(245,241,232,0.45)', fontSize: 10 }}>Your position</p>
@@ -68,14 +108,15 @@ export default async function LeaderboardPage() {
           </div>
         )}
 
-        {/* Rankings table */}
+        {/* Entrants / rankings table */}
         <div className="programme-card overflow-hidden">
           {!pickSixRankings.length ? (
             <div className="text-center py-16" style={{ color: 'rgba(245,241,232,0.3)' }}>
               <Star size={32} className="mx-auto mb-3 opacity-30" />
               <p>No entries yet. Be the first to enter My Golden Six!</p>
             </div>
-          ) : (
+          ) : tournamentStarted ? (
+            /* ── Live rankings ── */
             <div>
               {pickSixRankings.map((entry, idx) => {
                 const e = entry as {
@@ -83,7 +124,6 @@ export default async function LeaderboardPage() {
                   user_id: string;
                   total_points?: number;
                   profile?: { first_name?: string; last_name?: string };
-                  league?: { name?: string };
                 };
                 const isMe = user ? e.user_id === user.id : false;
                 const rank = ranks[idx];
@@ -99,26 +139,19 @@ export default async function LeaderboardPage() {
                       background: isMe ? 'rgba(227,58,58,0.07)' : 'transparent',
                     }}
                   >
-                    {/* Rank */}
                     <div className="w-10 shrink-0 text-center">
                       {medal
                         ? <span style={{ fontSize: 18 }}>{medal}</span>
                         : <span className="head" style={{ fontSize: 15, color: 'rgba(245,241,232,0.35)' }}>#{rank}</span>}
                     </div>
-
-                    {/* Name + league */}
                     <div className="flex-1 ml-4 min-w-0">
                       <p className="head truncate" style={{ fontSize: 16, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
                         {e.profile?.first_name} {e.profile?.last_name}
                         {isMe && <span className="mono ml-2" style={{ fontSize: 10, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.05em' }}>you</span>}
                         {isTied && <span className="mono ml-2" style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.05em' }}>tied</span>}
                       </p>
-                      <p className="eyebrow mt-0.5" style={{ fontSize: 10, color: 'rgba(245,241,232,0.35)' }}>
-                        Global League
-                      </p>
+                      <p className="eyebrow mt-0.5" style={{ fontSize: 10, color: 'rgba(245,241,232,0.35)' }}>Global League</p>
                     </div>
-
-                    {/* Points */}
                     <div className="text-right ml-4">
                       <p className="head" style={{ fontSize: 18, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
                         {e.total_points ?? 0}
@@ -128,10 +161,49 @@ export default async function LeaderboardPage() {
                   </div>
                 );
               })}
-
               <div className="px-5 py-4">
                 <p className="mono" style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.05em' }}>
                   Tied players share the combined prizes for their positions equally.
+                </p>
+              </div>
+            </div>
+          ) : (
+            /* ── Pre-tournament entrant list ── */
+            <div>
+              <div className="px-5 py-3" style={{ borderBottom: '1px solid rgba(245,241,232,0.1)' }}>
+                <p className="eyebrow" style={{ fontSize: 10, color: 'rgba(245,241,232,0.4)' }}>
+                  {pickSixRankings.length} {pickSixRankings.length === 1 ? 'player' : 'players'} entered
+                </p>
+              </div>
+              {pickSixRankings.map((entry) => {
+                const e = entry as {
+                  id: string;
+                  user_id: string;
+                  profile?: { first_name?: string; last_name?: string };
+                };
+                const isMe = user ? e.user_id === user.id : false;
+                return (
+                  <div
+                    key={e.id}
+                    className="flex items-center px-5 py-4"
+                    style={{
+                      borderBottom: '1px solid rgba(245,241,232,0.07)',
+                      background: isMe ? 'rgba(227,58,58,0.07)' : 'transparent',
+                    }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="head truncate" style={{ fontSize: 16, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
+                        {e.profile?.first_name} {e.profile?.last_name}
+                        {isMe && <span className="mono ml-2" style={{ fontSize: 10, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.05em' }}>you</span>}
+                      </p>
+                    </div>
+                    <span className="mono" style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.05em' }}>Entered</span>
+                  </div>
+                );
+              })}
+              <div className="px-5 py-4">
+                <p className="mono" style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.05em' }}>
+                  Rankings and points go live at kick-off · 11 June 2026
                 </p>
               </div>
             </div>
