@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { AlertCircle, ArrowRight, X, Eye, EyeOff, XCircle, Copy, Check } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { wc2026Teams } from '@/data/wc2026-teams';
@@ -594,6 +595,10 @@ function PickSixClientInner({ profile, existingEntry, userId, initialStep, entry
             We reconcile transfers each weekday morning. Your entries are saved.
           </p>
         </div>
+
+        <Link href="/dashboard" className="btn-primary mt-6 justify-center">
+          Go to your dashboard <ArrowRight size={16} />
+        </Link>
       </div>
     );
   }
