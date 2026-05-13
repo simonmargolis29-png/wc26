@@ -323,78 +323,65 @@ function PickSixClientInner({ profile, existingEntry, userId, initialStep, entry
     setSignupLoading(true);
     const client = createClient();
 
-    try {
-      console.log('[signup] step 1: auth.signUp');
-      const { data: authData, error: authError } = await client.auth.signUp({
-        email: signupForm.email,
-        password: signupForm.password,
-      });
-      if (authError || !authData.user) {
-        setSignupError(authError?.message ?? 'Sign up failed. Please try again.');
-        setSignupLoading(false);
-        return;
-      }
-      const newUserId = authData.user.id;
-      console.log('[signup] step 2: profile insert, userId=', newUserId);
+    const { data: authData, error: authError } = await client.auth.signUp({
+      email: signupForm.email,
+      password: signupForm.password,
+    });
+    if (authError || !authData.user) {
+      setSignupError(authError?.message ?? 'Sign up failed. Please try again.');
+      setSignupLoading(false);
+      return;
+    }
+    const newUserId = authData.user.id;
 
-      const { error: profileError } = await client.from('profiles').insert({
-        id: newUserId,
-        first_name: signupForm.firstName,
-        last_name: signupForm.lastName,
-        email: signupForm.email,
-        date_of_birth: signupForm.dateOfBirth,
-        is_admin: false,
-      });
-      if (profileError) {
-        console.error('[signup] profile error:', profileError);
-        setSignupError(`Profile setup failed: ${profileError.message}`);
-        setSignupLoading(false);
-        return;
-      }
+    const { error: profileError } = await client.from('profiles').insert({
+      id: newUserId,
+      first_name: signupForm.firstName,
+      last_name: signupForm.lastName,
+      email: signupForm.email,
+      date_of_birth: signupForm.dateOfBirth,
+      is_admin: false,
+    });
+    if (profileError) {
+      setSignupError('Account created but profile setup failed. Please contact support.');
+      setSignupLoading(false);
+      return;
+    }
 
-      console.log('[signup] step 3: league lookup');
-      let finalLeagueId = generalLeagueId;
-      if (!finalLeagueId) {
-        const { data: general } = await client.from('leagues').select('id').eq('type', 'general').single();
-        finalLeagueId = (general as { id: string } | null)?.id ?? null;
-      }
-      console.log('[signup] step 4: pick_six insert, leagueId=', finalLeagueId);
+    let finalLeagueId = generalLeagueId;
+    if (!finalLeagueId) {
+      const { data: general } = await client.from('leagues').select('id').eq('type', 'general').single();
+      finalLeagueId = (general as { id: string } | null)?.id ?? null;
+    }
 
-      const { error: entryErr } = await client.from('pick_six_entries').insert({
+    const { error: entryErr } = await client.from('pick_six_entries').insert({
+      user_id: newUserId,
+      league_id: finalLeagueId,
+      team_picks: picks,
+      total_points: 0,
+      payment_status: 'pending',
+    });
+    if (entryErr) {
+      setSignupError('Account created but picks could not be saved. Please contact support.');
+      setSignupLoading(false);
+      return;
+    }
+
+    if (sweepstakeIntent) {
+      const { error: sweepErr } = await client.from('sweepstake_entries').insert({
+        sweepstake_id: sweepstakeIntent.sweepstakeId,
         user_id: newUserId,
-        league_id: finalLeagueId,
-        team_picks: picks,
-        total_points: 0,
         payment_status: 'pending',
       });
-      if (entryErr) {
-        console.error('[signup] entry error:', entryErr);
-        setSignupError(`Picks could not be saved: ${entryErr.message}`);
-        setSignupLoading(false);
-        return;
+      if (sweepErr) {
+        setError('My Golden Six entry saved, but the sweepstake entry failed. Re-enter the sweepstake from your dashboard.');
       }
-
-      if (sweepstakeIntent) {
-        console.log('[signup] step 5: sweepstake insert');
-        const { error: sweepErr } = await client.from('sweepstake_entries').insert({
-          sweepstake_id: sweepstakeIntent.sweepstakeId,
-          user_id: newUserId,
-          payment_status: 'pending',
-        });
-        if (sweepErr) {
-          setError('My Golden Six entry saved, but the sweepstake entry failed. Re-enter the sweepstake from your dashboard.');
-        }
-        try { sessionStorage.removeItem(SWEEPSTAKE_INTENT_KEY); } catch { /* ignore */ }
-      }
-
-      setSavedName({ first: signupForm.firstName, last: signupForm.lastName });
-      setSignupLoading(false);
-      setStep('payment');
-    } catch (err) {
-      console.error('[signup] unexpected throw:', err);
-      setSignupError(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`);
-      setSignupLoading(false);
+      try { sessionStorage.removeItem(SWEEPSTAKE_INTENT_KEY); } catch { /* ignore */ }
     }
+
+    setSavedName({ first: signupForm.firstName, last: signupForm.lastName });
+    setSignupLoading(false);
+    setStep('payment');
   }
 
   // ─── Confirmed view ──────────────────────────────────────────────────────
