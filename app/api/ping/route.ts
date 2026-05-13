@@ -4,6 +4,9 @@ export async function GET() {
   return Response.json({
     supabaseUrl: url ? `${url.slice(0, 20)}…` : '(not set)',
     supabaseKey: key ? `${key.slice(0, 10)}…` : '(not set)',
-    urlValid: url.startsWith('https://'),
+    urlValid: url.trim().startsWith('https://'),
+    urlHasWhitespace: url !== url.trim(),
+    keyHasWhitespace: key !== key.trim(),
+    keyLength: key.length,
   });
 }
