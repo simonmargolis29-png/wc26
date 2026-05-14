@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, Suspense } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Users, AlertCircle, ArrowRight, Copy, Check, Eye, EyeOff, XCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -281,6 +282,12 @@ function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount,
             </div>
           ))}
         </div>
+
+        {step === 'payment' && (
+          <Link href="/dashboard" className="btn-primary mt-6 justify-center">
+            Go to your dashboard <ArrowRight size={16} />
+          </Link>
+        )}
       </div>
     );
   }
