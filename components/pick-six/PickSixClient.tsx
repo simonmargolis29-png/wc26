@@ -177,6 +177,7 @@ function PickSixClientInner({ profile, existingEntry, userId, initialStep, entry
   const [swapIndex, setSwapIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [expandedTiers, setExpandedTiers] = useState<Set<string>>(new Set());
   const [leagueMembers, setLeagueMembers] = useState<LeagueMemberPicks[]>([]);
 
   // Signup step state (used when unauthenticated)
@@ -772,26 +773,41 @@ function PickSixClientInner({ profile, existingEntry, userId, initialStep, entry
       {/* Grouped teams (by tier) */}
       {Object.entries(groupedTeams).map(([label, teams]) => {
         const tg = TIER_GROUPS.find(t => t.label === label);
+        const isExpanded = expandedTiers.has(label);
+        const toggle = () => setExpandedTiers(prev => {
+          const next = new Set(prev);
+          next.has(label) ? next.delete(label) : next.add(label);
+          return next;
+        });
         return (
-          <div key={label} className="mb-8">
-            <div className="flex items-baseline justify-between mb-3">
-              <p className="head" style={{ fontSize: 18, color: tg?.color ?? '#F5F1E8', letterSpacing: '0.04em' }}>{label}</p>
-              <p className="mono" style={{ fontSize: 11, color: 'rgba(245,241,232,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <div key={label} className="mb-4">
+            <button
+              onClick={toggle}
+              className="w-full flex items-center gap-4 mb-0"
+              style={{ textAlign: 'left' }}
+            >
+              <p className="head shrink-0" style={{ fontSize: 18, color: tg?.color ?? '#F5F1E8', letterSpacing: '0.04em' }}>{label}</p>
+              <p className="mono flex-1 text-center" style={{ fontSize: 11, color: 'rgba(245,241,232,0.28)', letterSpacing: '0.06em' }}>
+                {isExpanded ? 'click to collapse' : 'click to expand'}
+              </p>
+              <p className="mono shrink-0" style={{ fontSize: 11, color: 'rgba(245,241,232,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 {tg?.cost} pt{tg?.cost !== 1 ? 's' : ''} each
               </p>
-            </div>
-            <hr className="programme-rule mb-4" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {teams.map(team => {
-                const isSelected = picks.includes(team.code);
-                const isSwapTarget = swapIndex !== null && picks[swapIndex] === team.code;
-                const isDisabled = !isSelected && !canAddTeam(team.code) && swapIndex === null;
-                return (
-                  <KitTile key={team.code} team={team} isSelected={isSelected} isSwapTarget={isSwapTarget} isDisabled={isDisabled}
-                    onToggle={() => !isDisabled && toggleTeam(team.code)} />
-                );
-              })}
-            </div>
+            </button>
+            <hr className="programme-rule mt-3 mb-4" />
+            {isExpanded && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {teams.map(team => {
+                  const isSelected = picks.includes(team.code);
+                  const isSwapTarget = swapIndex !== null && picks[swapIndex] === team.code;
+                  const isDisabled = !isSelected && !canAddTeam(team.code) && swapIndex === null;
+                  return (
+                    <KitTile key={team.code} team={team} isSelected={isSelected} isSwapTarget={isSwapTarget} isDisabled={isDisabled}
+                      onToggle={() => !isDisabled && toggleTeam(team.code)} />
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })}
