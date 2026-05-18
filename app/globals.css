@@ -89,7 +89,7 @@ body {
 }
 .head {
   letter-spacing: -0.005em;
-  line-height: 0.86;
+  line-height: 1;
 }
 .head-tight {
   letter-spacing: 0;
