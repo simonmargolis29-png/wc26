@@ -31,6 +31,8 @@ export function AdminClient({
   const [tab, setTab] = useState<Tab>('overview');
   const supabase = createClient();
 
+  const profileById = Object.fromEntries(allProfiles.map(p => [p.id, p]));
+
   async function markPaid(table: string, id: string) {
     await supabase.from(table).update({ payment_status: 'paid' }).eq('id', id);
     window.location.reload();
@@ -142,12 +144,13 @@ export function AdminClient({
             </div>
             <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
               {allSweepEntries.map((entry) => {
-                const e = entry as { id: string; team_code?: string; payment_status?: string; profile?: { first_name?: string; last_name?: string; email?: string } };
+                const e = entry as { id: string; user_id?: string; team_code?: string; payment_status?: string };
+                const profile = profileById[e.user_id ?? ''];
                 return (
                   <div key={e.id} className="flex items-center px-5 py-3 gap-4">
                     <div className="flex-1">
-                      <p className="text-sm text-white">{e.profile?.first_name} {e.profile?.last_name}</p>
-                      <p className="text-xs text-white/40">{e.profile?.email}</p>
+                      <p className="text-sm text-white">{profile?.first_name} {profile?.last_name}</p>
+                      <p className="text-xs text-white/40">{profile?.email}</p>
                     </div>
                     <div>
                       {e.team_code ? (
@@ -188,13 +191,14 @@ export function AdminClient({
             </div>
             <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
               {allPickSixEntries.map((entry, idx) => {
-                const e = entry as { id: string; total_points?: number; payment_status?: string; team_picks?: string[]; profile?: { first_name?: string; last_name?: string; country_of_residence?: string }; league?: { name?: string } };
+                const e = entry as { id: string; user_id?: string; total_points?: number; payment_status?: string; team_picks?: string[]; league?: { name?: string } };
+                const profile = profileById[e.user_id ?? ''];
                 return (
                   <div key={e.id} className="flex items-center px-5 py-3 gap-4">
                     <span className="text-sm font-bold w-6 text-center" style={{ color: idx < 3 ? '#C9A84C' : 'rgba(240,244,255,0.3)' }}>#{idx + 1}</span>
                     <div className="flex-1">
-                      <p className="text-sm text-white">{e.profile?.first_name} {e.profile?.last_name}</p>
-                      <p className="text-xs text-white/40">{e.league?.name} · {e.profile?.country_of_residence}</p>
+                      <p className="text-sm text-white">{profile?.first_name} {profile?.last_name}</p>
+                      <p className="text-xs text-white/40">{e.league?.name} · {profile?.country_of_residence}</p>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {(e.team_picks ?? []).map((code: string) => (
                           <span key={code} className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(240,244,255,0.6)' }}>
