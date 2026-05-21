@@ -273,8 +273,8 @@ function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount,
             ['Tournament starts', TOURNAMENT_START],
             ['Winner', '£100'],
             ['Runner-up', '£40'],
-            ['Losing semi-finalist', '£20 each'],
-            ['Your team gets 0pts in the group stage', '£5 refund'],
+            ['Losing semi-finalist', '£20'],
+            ['Your team gets 0pts in the group stage', '£5'],
             ['Tournament top goalscorer plays for your team', '£10'],
           ].map(([k, v]) => (
             <div key={k} className="flex items-baseline justify-between py-3" style={{ borderBottom: '1px solid rgba(245,241,232,0.1)' }}>
@@ -496,8 +496,8 @@ function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount,
         {[
           { label: 'Winner', value: '£100', accent: true },
           { label: 'Runner-up', value: '£40', accent: false },
-          { label: 'Losing semi-finalist', value: '£20 each', accent: false },
-          { label: 'Your team gets 0pts in the group stage', value: '£5 refund', accent: false },
+          { label: 'Losing semi-finalist', value: '£20', accent: false },
+          { label: 'Your team gets 0pts in the group stage', value: '£5', accent: false },
           { label: 'Tournament top goalscorer plays for your team', value: '£10', accent: false },
         ].map((row) => (
           <div key={row.label} className="flex items-baseline justify-between py-3" style={{ borderBottom: '1px solid rgba(245,241,232,0.1)' }}>
