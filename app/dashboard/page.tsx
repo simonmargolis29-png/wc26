@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { Trophy, Star, ArrowRight, Clock } from 'lucide-react';
+import { Trophy, Star, ArrowRight, Clock, BarChart2 } from 'lucide-react';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -93,17 +93,23 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-bold text-white mb-1">My Golden Six</h2>
           <p className="text-sm text-white/50 mb-5 leading-relaxed">
             {pickSixEntry
-              ? `Tracking ${(pickSixEntry as { team_picks?: string[] }).team_picks?.length ?? 0} teams in the Global League.`
-              : 'Pick 6 teams and earn points across the whole tournament.'}
+              ? `Tracking ${(pickSixEntry as { team_picks?: string[] }).team_picks?.length ?? 0} teams in the Global League. See how you rank on the leaderboard.`
+              : 'Pick 6 teams, earn points across the tournament, and compete on the leaderboard.'}
           </p>
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-white/40">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-white/40 shrink-0">
               Win 3pts · Draw 1pt · 3+ goals +1pt
             </div>
             {pickSixEntry ? (
-              <Link href="/my-golden-six" className="btn-ghost text-sm px-4 py-2">View <ArrowRight size={13} /></Link>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link href="/leaderboard" className="btn-ghost text-sm px-3 py-2"><BarChart2 size={13} /> Leaderboard</Link>
+                <Link href="/my-golden-six" className="btn-ghost text-sm px-3 py-2">View <ArrowRight size={13} /></Link>
+              </div>
             ) : (
-              <Link href="/my-golden-six" className="btn-gold text-sm px-4 py-2">Enter — £10 <ArrowRight size={13} /></Link>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link href="/leaderboard" className="btn-ghost text-sm px-3 py-2"><BarChart2 size={13} /> Leaderboard</Link>
+                <Link href="/my-golden-six" className="btn-gold text-sm px-3 py-2">Enter — £10 <ArrowRight size={13} /></Link>
+              </div>
             )}
           </div>
         </div>
