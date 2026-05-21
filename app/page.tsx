@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { wc2026Teams } from '@/data/wc2026-teams';
 
 type Game = 'sweepstake' | 'my-golden-six';
@@ -194,32 +194,34 @@ export default function LandingPage() {
                 onClick={() => toggle('sweepstake')}
                 className="text-left transition-all duration-150"
                 style={{
-                  background: sweepSelected ? '#F5F1E8' : '#111E36',
-                  color: sweepSelected ? '#0A1628' : '#F5F1E8',
-                  border: sweepSelected ? '1px solid #F5F1E8' : '1px solid rgba(245,241,232,0.18)',
+                  background: sweepSelected ? '#E33A3A' : '#111E36',
+                  color: '#F5F1E8',
+                  border: sweepSelected ? '1px solid #E33A3A' : '1px solid rgba(245,241,232,0.18)',
                   borderRadius: 3,
                   padding: '24px',
                   position: 'relative',
-                  boxShadow: sweepSelected ? '5px 5px 0 #E33A3A' : '5px 5px 0 transparent',
+                  boxShadow: sweepSelected ? '5px 5px 0 #F5F1E8' : '5px 5px 0 transparent',
                   transform: sweepSelected ? 'translate(-2px, -2px)' : 'none',
                 }}
               >
                 <div className="flex items-start justify-between mb-6">
                   <div>
-                    <p className="eyebrow" style={{ color: sweepSelected ? 'rgba(10,22,40,0.55)' : 'rgba(245,241,232,0.55)' }}>Game 01</p>
+                    <p className="eyebrow" style={{ color: sweepSelected ? 'rgba(245,241,232,0.7)' : 'rgba(245,241,232,0.55)' }}>Game 01</p>
                     <p className="head mt-2" style={{ fontSize: 32 }}>Sweepstake</p>
                   </div>
-                  <div className="stamp" style={{ color: '#E33A3A' }}>£5</div>
+                  <div className="stamp" style={{ color: sweepSelected ? '#F5F1E8' : '#E33A3A' }}>£5</div>
                 </div>
-                <p className="text-sm mb-6" style={{ color: sweepSelected ? 'rgba(10,22,40,0.7)' : 'rgba(245,241,232,0.55)', lineHeight: 1.5 }}>
+                <p className="text-sm mb-6" style={{ color: sweepSelected ? 'rgba(245,241,232,0.85)' : 'rgba(245,241,232,0.55)', lineHeight: 1.5 }}>
                   48 players. 48 teams. Random draw. Follow your team to the final.
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className="eyebrow" style={{ color: sweepSelected ? '#0A1628' : '#F5F1E8' }}>
+                  <span className="eyebrow" style={{ color: '#F5F1E8' }}>
                     {sweepSelected ? 'Selected' : 'Add to entry'}
                   </span>
                   {sweepSelected ? (
-                    <span style={{ width: 14, height: 14, background: '#E33A3A', borderRadius: 1, display: 'inline-block' }} />
+                    <span style={{ width: 14, height: 14, background: '#F5F1E8', borderRadius: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check size={10} strokeWidth={3} color="#000" />
+                    </span>
                   ) : (
                     <span style={{ width: 14, height: 14, border: '1.5px solid rgba(245,241,232,0.4)', borderRadius: 1, display: 'inline-block' }} />
                   )}
@@ -256,7 +258,9 @@ export default function LandingPage() {
                     {pickSelected ? 'Selected' : 'Add to entry'}
                   </span>
                   {pickSelected ? (
-                    <span style={{ width: 14, height: 14, background: '#F5F1E8', borderRadius: 1, display: 'inline-block' }} />
+                    <span style={{ width: 14, height: 14, background: '#F5F1E8', borderRadius: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check size={10} strokeWidth={3} color="#000" />
+                    </span>
                   ) : (
                     <span style={{ width: 14, height: 14, border: '1.5px solid rgba(245,241,232,0.4)', borderRadius: 1, display: 'inline-block' }} />
                   )}
