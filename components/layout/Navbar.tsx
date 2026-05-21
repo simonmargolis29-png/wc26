@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ChevronDown, Settings, LogOut } from 'lucide-react';
+import { ChevronDown, Settings, LogOut, ShieldCheck } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile, SweepstakeEntry, PickSixEntry } from '@/types';
 import { teamsByCode } from '@/data/wc2026-teams';
@@ -211,6 +211,17 @@ export function Navbar({ profile }: NavbarProps) {
                   <p className="head" style={{ fontSize: 13 }}>{fullName}</p>
                   <p className="mono mt-1" style={{ fontSize: 10, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.05em' }}>{profile.email}</p>
                 </div>
+                {profile.is_admin && (
+                  <Link href="/admin" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 mono" style={{
+                    fontSize: 11,
+                    padding: '11px 16px',
+                    color: '#E33A3A',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                  }}>
+                    <ShieldCheck size={13} /> Admin
+                  </Link>
+                )}
                 <Link href="/account" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 mono" style={{
                   fontSize: 11,
                   padding: '11px 16px',
