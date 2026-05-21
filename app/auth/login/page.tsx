@@ -47,7 +47,10 @@ export default function LoginPage() {
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
             </div>
             <div>
-              <label>Password</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label style={{ marginBottom: 0 }}>Password</label>
+                <Link href="/auth/forgot-password" className="text-xs" style={{ color: '#C9A84C' }}>Forgot password?</Link>
+              </div>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
