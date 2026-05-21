@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { Navbar } from '@/components/layout/Navbar';
 import { AdminClient } from '@/components/admin/AdminClient';
 import type { Profile } from '@/types';
@@ -12,6 +13,8 @@ export default async function AdminPage() {
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
   if (!profile || !(profile as Profile).is_admin) redirect('/dashboard');
 
+  const admin = createAdminClient();
+
   const [
     { count: totalUsers },
     { count: sweepEntries },
@@ -21,13 +24,13 @@ export default async function AdminPage() {
     { data: allPickSixEntries },
     { data: countryStats },
   ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }),
-    supabase.from('sweepstake_entries').select('*', { count: 'exact', head: true }),
-    supabase.from('pick_six_entries').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-    supabase.from('sweepstake_entries').select('*, profile:profiles(first_name, last_name, email), sweepstake:sweepstakes(name)'),
-    supabase.from('pick_six_entries').select('*, profile:profiles(first_name, last_name, country_of_residence), league:leagues(name, type)').order('total_points', { ascending: false }),
-    supabase.from('profiles').select('country_of_residence'),
+    admin.from('profiles').select('*', { count: 'exact', head: true }),
+    admin.from('sweepstake_entries').select('*', { count: 'exact', head: true }),
+    admin.from('pick_six_entries').select('*', { count: 'exact', head: true }),
+    admin.from('profiles').select('*').order('created_at', { ascending: false }),
+    admin.from('sweepstake_entries').select('*, sweepstake:sweepstakes(name)'),
+    admin.from('pick_six_entries').select('*, league:leagues(name, type)').order('total_points', { ascending: false }),
+    admin.from('profiles').select('country_of_residence'),
   ]);
 
   // Calculate country distribution
