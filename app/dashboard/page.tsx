@@ -96,20 +96,15 @@ export default async function DashboardPage() {
               ? `Tracking ${(pickSixEntry as { team_picks?: string[] }).team_picks?.length ?? 0} teams in the Global League. See how you rank on the leaderboard.`
               : 'Pick 6 teams, earn points across the tournament, and compete on the leaderboard.'}
           </p>
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-xs text-white/40 shrink-0">
-              Win 3pts · Draw 1pt · 3+ goals +1pt
-            </div>
+          <div className="text-xs text-white/40 mb-3">
+            Win 3pts · Draw 1pt · 3+ goals +1pt
+          </div>
+          <div className="flex flex-col gap-2">
+            <Link href="/leaderboard" className="btn-ghost text-sm px-3 py-2 justify-center"><BarChart2 size={13} /> Leaderboard</Link>
             {pickSixEntry ? (
-              <div className="flex items-center gap-2 shrink-0">
-                <Link href="/leaderboard" className="btn-ghost text-sm px-3 py-2"><BarChart2 size={13} /> Leaderboard</Link>
-                <Link href="/my-golden-six" className="btn-ghost text-sm px-3 py-2">View <ArrowRight size={13} /></Link>
-              </div>
+              <Link href="/my-golden-six" className="btn-ghost text-sm px-3 py-2 justify-center">View <ArrowRight size={13} /></Link>
             ) : (
-              <div className="flex items-center gap-2 shrink-0">
-                <Link href="/leaderboard" className="btn-ghost text-sm px-3 py-2"><BarChart2 size={13} /> Leaderboard</Link>
-                <Link href="/my-golden-six" className="btn-gold text-sm px-3 py-2">Enter — £10 <ArrowRight size={13} /></Link>
-              </div>
+              <Link href="/my-golden-six" className="btn-gold text-sm px-3 py-2 justify-center">Enter — £10 <ArrowRight size={13} /></Link>
             )}
           </div>
         </div>
