@@ -436,7 +436,10 @@ export default function LandingPage() {
             </div>
             <span className="head" style={{ fontSize: 14 }}>Kickoff26</span>
           </div>
-          <p className="eyebrow" style={{ color: 'rgba(245,241,232,0.35)' }}>For entertainment only · Not affiliated with FIFA</p>
+          <div className="flex items-center gap-5 flex-wrap">
+            <p className="eyebrow" style={{ color: 'rgba(245,241,232,0.35)' }}>For entertainment only · Not affiliated with FIFA</p>
+            <Link href="/cookie-policy" className="eyebrow" style={{ color: 'rgba(245,241,232,0.35)', fontSize: 10, textDecoration: 'underline', textUnderlineOffset: 3 }}>Cookie policy</Link>
+          </div>
         </div>
       </footer>
 

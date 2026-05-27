@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Anton, DM_Sans, JetBrains_Mono } from 'next/font/google';
+import { CookieBanner } from '@/components/layout/CookieBanner';
 import './globals.css';
 
 const anton = Anton({
@@ -29,7 +30,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${anton.variable} ${dmSans.variable} ${jetbrains.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   );
 }
