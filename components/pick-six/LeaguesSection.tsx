@@ -57,7 +57,7 @@ export function LeaguesSection({ leagues, currentUserId }: Props) {
   function cancel() { setMode(null); setName(''); setCode(''); setError(''); }
 
   return (
-    <div className="mt-10">
+    <div id="leagues" className="mt-10">
       <hr className="programme-rule mb-8" />
       <p className="eyebrow-red mb-2">Private Leagues</p>
       <p className="mb-6" style={{ fontSize: 14, color: 'rgba(245,241,232,0.55)', lineHeight: 1.6 }}>

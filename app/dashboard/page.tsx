@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { Trophy, Star, ArrowRight, Clock, BarChart2 } from 'lucide-react';
+import { Trophy, Star, ArrowRight, Clock, BarChart2, Users } from 'lucide-react';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -102,7 +102,10 @@ export default async function DashboardPage() {
           <div className="flex flex-col gap-2">
             <Link href="/leaderboard" className="btn-ghost text-sm px-3 py-2 justify-center"><BarChart2 size={13} /> Leaderboard</Link>
             {pickSixEntry ? (
-              <Link href="/my-golden-six" className="btn-ghost text-sm px-3 py-2 justify-center">View <ArrowRight size={13} /></Link>
+              <>
+                <Link href="/my-golden-six" className="btn-ghost text-sm px-3 py-2 justify-center">View entry <ArrowRight size={13} /></Link>
+                <Link href="/my-golden-six#leagues" className="btn-ghost text-sm px-3 py-2 justify-center"><Users size={13} /> My Leagues</Link>
+              </>
             ) : (
               <Link href="/my-golden-six" className="btn-gold text-sm px-3 py-2 justify-center">Enter — £10 <ArrowRight size={13} /></Link>
             )}
