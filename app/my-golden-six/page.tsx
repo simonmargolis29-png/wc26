@@ -33,9 +33,10 @@ export default async function MyGoldenSixPage() {
       .select('league_id, league:leagues(id, name, type, invite_code, created_by)')
       .eq('user_id', user.id);
 
+    type LeagueRow = { id: string; name: string; type: string; invite_code: string | null; created_by: string };
     const privateLeagues = (memberships ?? [])
-      .map(m => m.league as { id: string; name: string; type: string; invite_code: string | null; created_by: string } | null)
-      .filter((l): l is NonNullable<typeof l> => !!l && l.type === 'private');
+      .map(m => { const l = m.league as unknown; return (Array.isArray(l) ? l[0] : l) as LeagueRow | null; })
+      .filter((l): l is LeagueRow => !!l && l.type === 'private');
 
     if (privateLeagues.length > 0) {
       const { data: allMembers } = await admin
