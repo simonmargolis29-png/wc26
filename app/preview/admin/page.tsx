@@ -26,6 +26,8 @@ export default function PreviewAdmin() {
           allPickSixEntries={mockLeaderboard}
           countryCount={mockCountryCount}
           teamPickCount={mockTeamPickCount}
+          sweepstakeId={null}
+          sweepstakeDrawn={false}
         />
       </main>
     </div>

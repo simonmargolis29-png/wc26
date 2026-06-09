@@ -26,6 +26,7 @@ export const mockSweepstakeEntry: SweepstakeEntry = {
   sweepstake_id: 'sweep-1',
   user_id: 'mock-user-1',
   team_code: null,
+  team_code_2: null,
   payment_status: 'pending',
   assigned_at: null,
   created_at: '2026-04-10T14:00:00Z',
@@ -34,6 +35,7 @@ export const mockSweepstakeEntry: SweepstakeEntry = {
 export const mockSweepstakeEntryWithTeam: SweepstakeEntry = {
   ...mockSweepstakeEntry,
   team_code: 'FRA',
+  team_code_2: 'ENG',
   payment_status: 'paid',
   assigned_at: '2026-06-09T18:30:00Z',
 };
