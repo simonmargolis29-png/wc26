@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Trophy, Star, Globe, TrendingUp, DollarSign, CheckCircle2, Clock } from 'lucide-react';
+import { Users, Trophy, Star, Globe, TrendingUp, DollarSign, CheckCircle2, Clock, Shuffle, AlertTriangle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { teamsByCode } from '@/data/wc2026-teams';
 import type { Profile } from '@/types';
@@ -18,6 +18,8 @@ interface Props {
   allPickSixEntries: Record<string, unknown>[];
   countryCount: Record<string, number>;
   teamPickCount: Record<string, number>;
+  sweepstakeId: string | null;
+  sweepstakeDrawn: boolean;
 }
 
 type Tab = 'overview' | 'sweepstake' | 'picksix' | 'users';
@@ -27,9 +29,31 @@ export function AdminClient({
   paidSweepCount, paidPickSixCount, revenue,
   allProfiles, allSweepEntries, allPickSixEntries,
   countryCount, teamPickCount,
+  sweepstakeDrawn,
 }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
+  const [drawConfirm, setDrawConfirm] = useState(false);
+  const [drawing, setDrawing] = useState(false);
+  const [drawError, setDrawError] = useState<string | null>(null);
   const supabase = createClient();
+
+  async function runDraw() {
+    setDrawing(true);
+    setDrawError(null);
+    try {
+      const res = await fetch('/api/run-draw', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        setDrawError(data.error ?? 'Draw failed — please try again');
+        setDrawing(false);
+      } else {
+        window.location.reload();
+      }
+    } catch {
+      setDrawError('Network error — please try again');
+      setDrawing(false);
+    }
+  }
 
   const profileById = Object.fromEntries(allProfiles.map(p => [p.id, p]));
 
@@ -138,13 +162,61 @@ export function AdminClient({
             <div className="glass-card p-5"><p className="text-2xl font-black" style={{ color: '#4ade80' }}>{paidSweepCount}</p><p className="text-xs text-white/40">Paid</p></div>
             <div className="glass-card p-5"><p className="text-2xl font-black" style={{ color: '#CE1126' }}>{sweepEntries - paidSweepCount}</p><p className="text-xs text-white/40">Pending payment</p></div>
           </div>
+
+          {/* Draw control */}
+          <div className="glass-card p-6 mb-6">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm font-semibold text-white flex items-center gap-2"><Shuffle size={15} style={{ color: '#C9A84C' }} /> Run the draw</p>
+              {sweepstakeDrawn && <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80' }}>Draw complete</span>}
+            </div>
+            {sweepstakeDrawn ? (
+              <p className="text-xs text-white/40">Teams have been assigned. Results are visible to each player on their sweepstake page.</p>
+            ) : (
+              <>
+                <p className="text-xs text-white/40 mb-4">Randomly assigns 2 teams to each paid entrant ({paidSweepCount} paid). This cannot be undone.</p>
+                {drawError && (
+                  <div className="flex items-center gap-2 text-xs mb-4 px-3 py-2 rounded-lg" style={{ background: 'rgba(206,17,38,0.1)', color: '#CE1126' }}>
+                    <AlertTriangle size={12} /> {drawError}
+                  </div>
+                )}
+                {!drawConfirm ? (
+                  <button
+                    onClick={() => setDrawConfirm(true)}
+                    disabled={paidSweepCount === 0}
+                    className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-all disabled:opacity-40"
+                    style={{ background: 'rgba(201,168,76,0.15)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)' }}
+                  >
+                    <Shuffle size={14} /> Run draw for {paidSweepCount} paid {paidSweepCount === 1 ? 'entry' : 'entries'}
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs font-semibold" style={{ color: '#CE1126' }}>Are you sure? This cannot be undone.</p>
+                    <button
+                      onClick={runDraw}
+                      disabled={drawing}
+                      className="text-sm font-bold px-4 py-2 rounded-lg transition-all"
+                      style={{ background: '#CE1126', color: '#fff' }}
+                    >
+                      {drawing ? 'Running…' : 'Confirm draw'}
+                    </button>
+                    <button
+                      onClick={() => setDrawConfirm(false)}
+                      className="text-sm px-3 py-2 rounded-lg text-white/50 hover:text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
           <div className="glass-card overflow-hidden">
             <div className="px-5 py-3.5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="text-sm font-semibold text-white">All entries</p>
             </div>
             <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
               {allSweepEntries.map((entry) => {
-                const e = entry as { id: string; user_id?: string; team_code?: string; payment_status?: string };
+                const e = entry as { id: string; user_id?: string; team_code?: string; team_code_2?: string; payment_status?: string };
                 const profile = profileById[e.user_id ?? ''];
                 return (
                   <div key={e.id} className="flex items-center px-5 py-3 gap-4">
@@ -152,9 +224,12 @@ export function AdminClient({
                       <p className="text-sm text-white">{profile?.first_name} {profile?.last_name}</p>
                       <p className="text-xs text-white/40">{profile?.email}</p>
                     </div>
-                    <div>
+                    <div className="flex flex-col gap-1">
                       {e.team_code ? (
-                        <span className="text-sm">{teamsByCode[e.team_code]?.flag_emoji} {teamsByCode[e.team_code]?.name}</span>
+                        <>
+                          <span className="text-sm">{teamsByCode[e.team_code]?.flag_emoji} {teamsByCode[e.team_code]?.name}</span>
+                          {e.team_code_2 && <span className="text-sm">{teamsByCode[e.team_code_2]?.flag_emoji} {teamsByCode[e.team_code_2]?.name}</span>}
+                        </>
                       ) : (
                         <span className="text-xs text-white/30">Not yet drawn</span>
                       )}

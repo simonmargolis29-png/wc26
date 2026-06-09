@@ -34,6 +34,7 @@ export interface SweepstakeEntry {
   sweepstake_id: string;
   user_id: string;
   team_code: string | null;
+  team_code_2: string | null;
   payment_status: 'pending' | 'paid';
   assigned_at: string | null;
   created_at: string;

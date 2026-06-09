@@ -207,8 +207,11 @@ function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount,
   if (step === 'confirmed' || step === 'payment') {
     const displayFirst = profile?.first_name ?? savedName?.first ?? '';
     const displayLast = profile?.last_name ?? savedName?.last ?? '';
-    const assignedTeam = existingEntry?.team_code
+    const assignedTeam1 = existingEntry?.team_code
       ? wc2026Teams.find(t => t.code === existingEntry.team_code)
+      : null;
+    const assignedTeam2 = existingEntry?.team_code_2
+      ? wc2026Teams.find(t => t.code === existingEntry.team_code_2)
       : null;
 
     return (
@@ -219,20 +222,24 @@ function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount,
             You&rsquo;re <span style={{ color: '#E33A3A' }}>in</span>.
           </h1>
           <hr className="programme-rule-strong mt-5 mb-4" />
-          {assignedTeam ? (
+          {assignedTeam1 ? (
             <div>
-              <p className="text-sm mb-3" style={{ color: 'rgba(245,241,232,0.65)' }}>Your drawn team:</p>
-              <div className="flex items-center gap-4">
-                <span style={{ fontSize: 48, lineHeight: 1 }}>{assignedTeam.flag_emoji}</span>
-                <div>
-                  <p className="head" style={{ fontSize: 32 }}>{assignedTeam.name}</p>
-                  <p className="eyebrow mt-1" style={{ color: 'rgba(245,241,232,0.5)' }}>{assignedTeam.confederation} · Group {assignedTeam.group_name}</p>
-                </div>
+              <p className="text-sm mb-4" style={{ color: 'rgba(245,241,232,0.65)' }}>Your drawn teams:</p>
+              <div className="flex flex-col gap-4">
+                {[assignedTeam1, assignedTeam2].filter(Boolean).map((team) => team && (
+                  <div key={team.code} className="flex items-center gap-4">
+                    <span style={{ fontSize: 48, lineHeight: 1 }}>{team.flag_emoji}</span>
+                    <div>
+                      <p className="head" style={{ fontSize: 32 }}>{team.name}</p>
+                      <p className="eyebrow mt-1" style={{ color: 'rgba(245,241,232,0.5)' }}>{team.confederation} · Group {team.group_name}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
             <p className="text-sm" style={{ color: 'rgba(245,241,232,0.65)' }}>
-              Entry registered. Your team is drawn at random on {DRAW_DATE}. Check back here after the draw to see who you got.
+              Entry registered. You&rsquo;ll be drawn 2 teams at random on {DRAW_DATE}. Check back here after the draw to see who you got.
             </p>
           )}
         </div>

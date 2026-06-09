@@ -58,13 +58,13 @@ export default async function DashboardPage() {
           <p className="text-sm text-white/50 mb-5 leading-relaxed">
             {sweepEntry
               ? sweepEntry.team_code
-                ? `Your team will be revealed after the draw on 9 June.`
-                : 'Draw on 9 June 2026'
-              : 'Join 48 players for a random World Cup team draw on 9 June.'}
+                ? 'Draw complete — view your teams.'
+                : 'Draw on Wednesday 10 June at 8pm.'
+              : 'Pay £5, get 2 teams drawn at random on Wednesday 10 June at 8pm.'}
           </p>
           <div className="flex items-center justify-between">
             <div className="text-xs text-white/40 flex items-center gap-1.5">
-              <Clock size={12} /> Draw: 9 June 2026
+              <Clock size={12} /> Draw: Wed 10 June, 8pm
             </div>
             {sweepEntry ? (
               <Link href="/sweepstake" className="btn-ghost text-sm px-4 py-2">View entry <ArrowRight size={13} /></Link>

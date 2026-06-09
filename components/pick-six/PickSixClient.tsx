@@ -648,15 +648,16 @@ function PickSixClientInner({ profile, existingEntry, userId, initialStep, entry
 
       {/* Prize fund */}
       {(() => {
-        const pot = entryCount * 10;
-        const hasPot = pot > 0;
+        const entriesPot = entryCount * 10;
+        const pot = entriesPot + 100;
+        const hasPot = entriesPot > 0;
         return (
           <div className="programme-card p-5 mb-6">
             <div className="flex items-baseline justify-between mb-3">
               <p className="eyebrow-red">Prize fund</p>
               {hasPot
-                ? <p className="head" style={{ fontSize: 18 }}>£{pot} pot · {entryCount} {entryCount === 1 ? 'entry' : 'entries'}</p>
-                : <p className="mono" style={{ fontSize: 11, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.05em' }}>£10 × entries</p>}
+                ? <p className="head" style={{ fontSize: 18 }}>£{pot} pot · {entryCount} {entryCount === 1 ? 'entry' : 'entries'} + £100</p>
+                : <p className="mono" style={{ fontSize: 11, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.05em' }}>£10 × entries + £100</p>}
             </div>
             <hr className="programme-rule mb-3" />
             {[

@@ -23,6 +23,7 @@ export default async function AdminPage() {
     { data: allSweepEntries },
     { data: allPickSixEntries },
     { data: countryStats },
+    { data: sweepstake },
   ] = await Promise.all([
     admin.from('profiles').select('*', { count: 'exact', head: true }),
     admin.from('sweepstake_entries').select('*', { count: 'exact', head: true }),
@@ -31,6 +32,7 @@ export default async function AdminPage() {
     admin.from('sweepstake_entries').select('*, sweepstake:sweepstakes(name)'),
     admin.from('pick_six_entries').select('*, league:leagues(name, type)').order('total_points', { ascending: false }),
     admin.from('profiles').select('country_of_residence'),
+    admin.from('sweepstakes').select('id, status').order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   // Calculate country distribution
@@ -69,6 +71,8 @@ export default async function AdminPage() {
           allPickSixEntries={allPickSixEntries ?? []}
           countryCount={countryCount}
           teamPickCount={teamPickCount}
+          sweepstakeId={(sweepstake as { id?: string } | null)?.id ?? null}
+          sweepstakeDrawn={(sweepstake as { status?: string } | null)?.status === 'drawn'}
         />
       </main>
     </div>
