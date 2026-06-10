@@ -6,6 +6,9 @@ import { wc2026Teams } from '@/data/wc2026-teams';
 // Teams excluded from the sweepstake draw pool — not allocated to any entry.
 const EXCLUDED_TEAMS = ['QAT', 'UZB', 'JOR', 'IRN', 'HTI', 'CPV', 'COD'];
 
+// Top teams guaranteed a place in the draw pool (so they go to a player) when not all teams are needed.
+const PRIORITY_TEAMS = ['ENG', 'ARG', 'BRA', 'FRA', 'ESP', 'NED', 'POR', 'GER', 'BEL', 'USA', 'CRO'];
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -41,7 +44,13 @@ export async function POST() {
   const maxEntries = Math.floor(eligibleTeams.length / 2);
   if (entries.length > maxEntries) return NextResponse.json({ error: `Too many entries (${entries.length}) — only ${maxEntries} players can get 2 teams from ${eligibleTeams.length}` }, { status: 400 });
 
-  const teams = shuffle(eligibleTeams);
+  // Guarantee priority teams are included in the pool of teams actually allocated,
+  // then fill any remaining slots randomly from the rest.
+  const neededCount = entries.length * 2;
+  const priorityTeams = eligibleTeams.filter(t => PRIORITY_TEAMS.includes(t.code));
+  const restTeams = shuffle(eligibleTeams.filter(t => !PRIORITY_TEAMS.includes(t.code)));
+  const pool = [...priorityTeams, ...restTeams].slice(0, neededCount);
+  const teams = shuffle(pool);
   const now = new Date().toISOString();
 
   const updates = entries.map((entry, i) => ({
