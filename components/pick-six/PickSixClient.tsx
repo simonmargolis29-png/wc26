@@ -30,7 +30,7 @@ const PAYPAL_HANDLE = '@SimonM80';
 // Win = 3 pts · Draw = 1 pt · 3+ goals scored in a match = +1 pt
 const SQUAD_SIZE = 6;
 const BUDGET = 15;
-const ENTRY_DEADLINE = '9 June 2026, 21:00 BST';
+const ENTRY_DEADLINE = '11 June 2026, 17:00 BST';
 
 type TierLabel = 'Elite' | 'Contender' | 'Dark Horse' | 'Wildcard';
 

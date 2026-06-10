@@ -71,7 +71,7 @@ export function PreviewNavbar({ profile, sweepEntries = [], pickSixEntry = null 
                 <div className="space-y-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#C9A84C' }}>Sweepstake</p>
-                    <p className="text-xs text-white/40 italic">Draw on 9 June 2026 — team TBC</p>
+                    <p className="text-xs text-white/40 italic">Draw on 10 June 2026 — team TBC</p>
                   </div>
                   {pickSixEntry && (
                     <div>

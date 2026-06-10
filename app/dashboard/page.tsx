@@ -59,12 +59,12 @@ export default async function DashboardPage() {
             {sweepEntry
               ? sweepEntry.team_code
                 ? 'Draw complete — view your teams.'
-                : 'Draw on Wednesday 10 June at 8pm.'
-              : 'Pay £5, get 2 teams drawn at random on Wednesday 10 June at 8pm.'}
+                : 'Draw on Wednesday 10 June at 11pm.'
+              : 'Pay £5, get 2 teams drawn at random on Wednesday 10 June at 11pm.'}
           </p>
           <div className="flex items-center justify-between">
             <div className="text-xs text-white/40 flex items-center gap-1.5">
-              <Clock size={12} /> Draw: Wed 10 June, 8pm
+              <Clock size={12} /> Draw: Wed 10 June, 11pm
             </div>
             {sweepEntry ? (
               <Link href="/sweepstake" className="btn-ghost text-sm px-4 py-2">View entry <ArrowRight size={13} /></Link>

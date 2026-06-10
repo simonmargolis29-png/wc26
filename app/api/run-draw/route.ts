@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { wc2026Teams } from '@/data/wc2026-teams';
 
+// Teams excluded from the sweepstake draw pool — not allocated to any entry.
+const EXCLUDED_TEAMS = ['QAT', 'UZB', 'JOR', 'IRN', 'HTI', 'CPV', 'COD'];
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -33,9 +36,12 @@ export async function POST() {
     .eq('payment_status', 'paid');
 
   if (!entries || entries.length === 0) return NextResponse.json({ error: 'No paid entries to draw' }, { status: 400 });
-  if (entries.length > 24) return NextResponse.json({ error: `Too many entries (${entries.length}) — only 24 players can get 2 teams from 48` }, { status: 400 });
 
-  const teams = shuffle(wc2026Teams);
+  const eligibleTeams = wc2026Teams.filter(t => !EXCLUDED_TEAMS.includes(t.code));
+  const maxEntries = Math.floor(eligibleTeams.length / 2);
+  if (entries.length > maxEntries) return NextResponse.json({ error: `Too many entries (${entries.length}) — only ${maxEntries} players can get 2 teams from ${eligibleTeams.length}` }, { status: 400 });
+
+  const teams = shuffle(eligibleTeams);
   const now = new Date().toISOString();
 
   const updates = entries.map((entry, i) => ({

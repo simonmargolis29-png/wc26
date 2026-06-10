@@ -341,7 +341,7 @@ export default function LandingPage() {
               <h3 className="head mb-4" style={{ fontSize: 56 }}>Sweepstake</h3>
               <hr className="programme-rule mb-5" />
               <p className="text-base leading-relaxed mb-8" style={{ color: 'rgba(245,241,232,0.65)' }}>
-                Forty-eight players, forty-eight teams, one random draw on 9 June. You get who you get — and follow them all the way through.
+                Forty-eight players, forty-eight teams, one random draw on 10 June. You get who you get — and follow them all the way through.
               </p>
 
               <div className="space-y-3">
@@ -409,7 +409,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             <div className="md:col-span-7">
               <p className="head" style={{ fontSize: 'clamp(28px, 3.5vw, 44px)' }}>
-                Entries close <span style={{ color: '#E33A3A' }}>9 June</span>
+                Entries close <span style={{ color: '#E33A3A' }}>5pm, 11 June</span>
               </p>
               <p className="mt-2 eyebrow" style={{ color: 'rgba(245,241,232,0.55)' }}>Draw + first match-day · 11 June 2026</p>
             </div>

@@ -38,12 +38,12 @@ export default function PreviewDashboard() {
                 <span style={{ fontSize: 36, lineHeight: 1 }}>{assignedTeam.flag_emoji}</span>
                 <div>
                   <p className="head" style={{ fontSize: 18 }}>{assignedTeam.name}</p>
-                  <p className="eyebrow mt-0.5" style={{ color: 'rgba(245,241,232,0.5)', fontSize: 10 }}>Drawn 9 June</p>
+                  <p className="eyebrow mt-0.5" style={{ color: 'rgba(245,241,232,0.5)', fontSize: 10 }}>Drawn 10 June</p>
                 </div>
               </div>
             ) : (
               <p className="text-sm mb-4" style={{ color: 'rgba(245,241,232,0.6)' }}>
-                Team drawn on 9 June. Check back after the draw.
+                Team drawn on 10 June. Check back after the draw.
               </p>
             )}
             <Link href="/preview/sweepstake-entered" className="eyebrow flex items-center gap-2" style={{ color: 'rgba(245,241,232,0.5)', fontSize: 11 }}>
@@ -80,7 +80,7 @@ export default function PreviewDashboard() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             {[
               ['Kick-off', '11 June 2026'],
-              ['Draw', '9 June 2026'],
+              ['Draw', '10 June 2026'],
               ['Final', '19 July 2026'],
               ['Matches', '104'],
             ].map(([label, value]) => (

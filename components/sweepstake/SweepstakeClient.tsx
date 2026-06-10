@@ -28,7 +28,7 @@ const BANK_DETAILS = {
 };
 const PAYPAL_HANDLE = '@SimonM80';
 
-const DRAW_DATE = 'Wednesday 10 June at 8pm';
+const DRAW_DATE = 'Wednesday 10 June at 11pm';
 const TOURNAMENT_START = '11 June 2026';
 
 function validatePassword(pw: string) {
