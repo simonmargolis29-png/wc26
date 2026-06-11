@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getWorldCupMatches } from '@/lib/football-api';
 
 // Called by a cron job or manually to sync match results and update points
-export async function POST(request: Request) {
+async function syncMatches(request: Request) {
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const matchData = await getWorldCupMatches();
   if (!matchData) return NextResponse.json({ error: 'Failed to fetch matches' }, { status: 500 });
 
@@ -87,4 +87,13 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, processed: finishedMatches.length });
+}
+
+// Vercel Cron sends GET requests; allow POST too for manual triggers.
+export async function GET(request: Request) {
+  return syncMatches(request);
+}
+
+export async function POST(request: Request) {
+  return syncMatches(request);
 }
