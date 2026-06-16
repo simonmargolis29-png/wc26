@@ -2,6 +2,17 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getWorldCupMatches } from '@/lib/football-api';
 
+// football-data.org TLA codes that differ from our internal team codes
+const API_CODE_MAP: Record<string, string> = {
+  KSA: 'SAU',
+  URY: 'URU',
+  HAI: 'HTI',
+};
+
+function normaliseCode(tla: string): string {
+  return API_CODE_MAP[tla] ?? tla;
+}
+
 // Called by a cron job or manually to sync match results and update points
 async function syncMatches(request: Request) {
   const authHeader = request.headers.get('authorization');
@@ -16,8 +27,8 @@ async function syncMatches(request: Request) {
   const finishedMatches = matchData.matches?.filter((m: { status: string }) => m.status === 'FINISHED') ?? [];
 
   for (const match of finishedMatches) {
-    const homeCode: string = match.homeTeam?.tla;
-    const awayCode: string = match.awayTeam?.tla;
+    const homeCode: string = normaliseCode(match.homeTeam?.tla);
+    const awayCode: string = normaliseCode(match.awayTeam?.tla);
     const homeScore: number = match.score?.fullTime?.home;
     const awayScore: number = match.score?.fullTime?.away;
 
