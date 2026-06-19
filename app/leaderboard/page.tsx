@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { Navbar } from '@/components/layout/Navbar';
 import { Star } from 'lucide-react';
 import type { Profile } from '@/types';
@@ -20,16 +21,17 @@ const STAT_COLS = ['P', 'W', 'D', 'L', 'G', 'PTS'] as const;
 
 export default async function LeaderboardPage() {
   const supabase = await createClient();
+  const admin = createAdminClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   const [profileResult, rankingsResult, matchesResult] = await Promise.all([
     user ? supabase.from('profiles').select('*').eq('id', user.id).single() : Promise.resolve({ data: null }),
-    supabase
+    admin
       .from('pick_six_entries')
       .select('*, profile:profiles(first_name, last_name), league:leagues(name, type)')
       .order('total_points', { ascending: false })
       .limit(100),
-    supabase
+    admin
       .from('matches')
       .select('home_team_code, away_team_code, home_score, away_score')
       .eq('status', 'FINISHED'),
