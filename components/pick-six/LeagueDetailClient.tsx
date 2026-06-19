@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Copy, Check, ArrowLeft, UserMinus, LogOut } from 'lucide-react';
 import { teamsByCode } from '@/data/wc2026-teams';
+import type { EntryStats } from '@/lib/entry-stats';
 
 interface Member {
   user_id: string;
@@ -12,7 +13,10 @@ interface Member {
   last_name: string;
   total_points: number;
   team_picks: string[];
+  stats: EntryStats;
 }
+
+const STAT_COLS = ['P', 'W', 'D', 'L', 'B', 'PTS'] as const;
 
 interface Props {
   leagueId: string;
@@ -107,28 +111,48 @@ export function LeagueDetailClient({
           </p>
         </div>
 
+        {/* Column headers — tournament only */}
+        {tournamentStarted && (
+          <div className="flex items-center px-5 py-2" style={{ borderBottom: '1px solid rgba(245,241,232,0.07)' }}>
+            <div className="w-7 shrink-0" />
+            <div className="flex-1 ml-3 min-w-0">
+              <span className="eyebrow" style={{ fontSize: 9, color: 'rgba(245,241,232,0.35)', letterSpacing: '0.12em' }}>PLAYER</span>
+            </div>
+            {STAT_COLS.map(col => (
+              <div key={col} className="w-8 text-center shrink-0">
+                <span className="eyebrow" style={{ fontSize: 9, color: 'rgba(245,241,232,0.35)', letterSpacing: '0.12em' }}>{col}</span>
+              </div>
+            ))}
+            {isCreator && <div className="w-10 shrink-0" />}
+          </div>
+        )}
+
         {sorted.map((member, idx) => {
           const isMe = member.user_id === currentUserId;
+          const { stats } = member;
+          const statValues = tournamentStarted
+            ? [stats.P, stats.W, stats.D, stats.L, stats.B, member.total_points]
+            : [];
           return (
             <div
               key={member.user_id}
-              className="flex items-center px-5 py-4 gap-4"
+              className="flex items-center px-5 py-4 gap-0"
               style={{
                 borderBottom: '1px solid rgba(245,241,232,0.07)',
                 background: isMe ? 'rgba(227,58,58,0.07)' : 'transparent',
               }}
             >
               {tournamentStarted && (
-                <span className="head w-6 text-center shrink-0" style={{ fontSize: 14, color: 'rgba(245,241,232,0.35)' }}>
+                <span className="head w-7 text-center shrink-0" style={{ fontSize: 13, color: 'rgba(245,241,232,0.35)' }}>
                   #{idx + 1}
                 </span>
               )}
-              <div className="flex-1 min-w-0">
-                <p className="head truncate" style={{ fontSize: 16, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
+              <div className="flex-1 ml-3 min-w-0">
+                <p className="head truncate" style={{ fontSize: 15, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
                   {member.first_name} {member.last_name}
                   {isMe && <span className="mono ml-2" style={{ fontSize: 10, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.05em' }}>you</span>}
                 </p>
-                <div className="flex flex-wrap gap-1 mt-1">
+                <div className="flex flex-wrap gap-1 mt-0.5">
                   {member.team_picks.map(code => (
                     <span key={code} className="mono" style={{ fontSize: 10, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.04em' }}>
                       {teamsByCode[code]?.flag_emoji} {teamsByCode[code]?.name}
@@ -136,23 +160,36 @@ export function LeagueDetailClient({
                   ))}
                 </div>
               </div>
-              {tournamentStarted && (
-                <div className="text-right shrink-0">
-                  <p className="head" style={{ fontSize: 18, color: isMe ? '#E33A3A' : '#F5F1E8' }}>{member.total_points}</p>
-                  <p className="eyebrow" style={{ fontSize: 10, color: 'rgba(245,241,232,0.35)' }}>pts</p>
-                </div>
-              )}
+              {statValues.map((val, i) => {
+                const isPts = i === statValues.length - 1;
+                return (
+                  <div key={i} className="w-8 text-center shrink-0">
+                    <span
+                      className={isPts ? 'head' : 'mono'}
+                      style={{
+                        fontSize: isPts ? 14 : 12,
+                        color: isPts
+                          ? (isMe ? '#E33A3A' : '#F5F1E8')
+                          : 'rgba(245,241,232,0.55)',
+                      }}
+                    >
+                      {val}
+                    </span>
+                  </div>
+                );
+              })}
               {isCreator && !isMe && (
                 <button
                   onClick={() => ejectMember(member.user_id, `${member.first_name} ${member.last_name}`)}
                   disabled={ejecting === member.user_id}
-                  className="shrink-0 flex items-center gap-1.5 mono"
+                  className="shrink-0 flex items-center gap-1.5 mono ml-2"
                   style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}
                 >
                   <UserMinus size={12} />
                   {ejecting === member.user_id ? '...' : 'Eject'}
                 </button>
               )}
+              {isCreator && isMe && <div className="w-10 shrink-0" />}
             </div>
           );
         })}

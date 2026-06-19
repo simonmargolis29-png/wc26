@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/layout/Navbar';
 import { Star } from 'lucide-react';
 import type { Profile } from '@/types';
+import { computeEntryStats } from '@/lib/entry-stats';
 
 function computeRanks(entries: { total_points: number }[]): number[] {
   const ranks: number[] = [];
@@ -15,23 +16,34 @@ function computeRanks(entries: { total_points: number }[]): number[] {
   return ranks;
 }
 
+const STAT_COLS = ['P', 'W', 'D', 'L', 'B', 'PTS'] as const;
+
 export default async function LeaderboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [profileResult, rankingsResult] = await Promise.all([
+  const [profileResult, rankingsResult, matchesResult] = await Promise.all([
     user ? supabase.from('profiles').select('*').eq('id', user.id).single() : Promise.resolve({ data: null }),
     supabase
       .from('pick_six_entries')
       .select('*, profile:profiles(first_name, last_name), league:leagues(name, type)')
       .order('total_points', { ascending: false })
       .limit(100),
+    supabase
+      .from('matches')
+      .select('home_team_code, away_team_code, home_score, away_score')
+      .eq('status', 'FINISHED'),
   ]);
 
   const profile = profileResult.data as Profile | null;
   const pickSixRankings = rankingsResult.data ?? [];
+  const finishedMatches = (matchesResult.data ?? []) as {
+    home_team_code: string;
+    away_team_code: string;
+    home_score: number;
+    away_score: number;
+  }[];
 
-  // Pre-tournament: no one has scored yet
   const tournamentStarted = pickSixRankings.some(
     e => ((e as { total_points?: number }).total_points ?? 0) > 0
   );
@@ -118,17 +130,34 @@ export default async function LeaderboardPage() {
           ) : tournamentStarted ? (
             /* ── Live rankings ── */
             <div>
+              {/* Column headers */}
+              <div className="flex items-center px-5 py-3" style={{ borderBottom: '1px solid rgba(245,241,232,0.1)' }}>
+                <div className="w-10 shrink-0" />
+                <div className="flex-1 ml-4 min-w-0">
+                  <span className="eyebrow" style={{ fontSize: 9, color: 'rgba(245,241,232,0.35)', letterSpacing: '0.12em' }}>PLAYER</span>
+                </div>
+                {STAT_COLS.map(col => (
+                  <div key={col} className="w-8 text-center shrink-0">
+                    <span className="eyebrow" style={{ fontSize: 9, color: 'rgba(245,241,232,0.35)', letterSpacing: '0.12em' }}>{col}</span>
+                  </div>
+                ))}
+              </div>
+
               {pickSixRankings.map((entry, idx) => {
                 const e = entry as {
                   id: string;
                   user_id: string;
                   total_points?: number;
+                  team_picks?: string[];
                   profile?: { first_name?: string; last_name?: string };
                 };
                 const isMe = user ? e.user_id === user.id : false;
                 const rank = ranks[idx];
                 const isTied = pickSixRankings.filter((_, j) => ranks[j] === rank).length > 1;
                 const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
+                const stats = computeEntryStats(e.team_picks ?? [], finishedMatches);
+                const pts = e.total_points ?? 0;
+                const statValues = [stats.P, stats.W, stats.D, stats.L, stats.B, pts];
 
                 return (
                   <div
@@ -145,25 +174,37 @@ export default async function LeaderboardPage() {
                         : <span className="head" style={{ fontSize: 15, color: 'rgba(245,241,232,0.35)' }}>#{rank}</span>}
                     </div>
                     <div className="flex-1 ml-4 min-w-0">
-                      <p className="head truncate" style={{ fontSize: 16, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
+                      <p className="head truncate" style={{ fontSize: 15, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
                         {e.profile?.first_name} {e.profile?.last_name}
                         {isMe && <span className="mono ml-2" style={{ fontSize: 10, color: 'rgba(245,241,232,0.4)', letterSpacing: '0.05em' }}>you</span>}
                         {isTied && <span className="mono ml-2" style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.05em' }}>tied</span>}
                       </p>
-                      <p className="eyebrow mt-0.5" style={{ fontSize: 10, color: 'rgba(245,241,232,0.35)' }}>Global League</p>
                     </div>
-                    <div className="text-right ml-4">
-                      <p className="head" style={{ fontSize: 18, color: isMe ? '#E33A3A' : '#F5F1E8' }}>
-                        {e.total_points ?? 0}
-                      </p>
-                      <p className="eyebrow" style={{ fontSize: 10, color: 'rgba(245,241,232,0.35)' }}>pts</p>
-                    </div>
+                    {statValues.map((val, i) => {
+                      const isPts = i === statValues.length - 1;
+                      return (
+                        <div key={i} className="w-8 text-center shrink-0">
+                          <span
+                            className={isPts ? 'head' : 'mono'}
+                            style={{
+                              fontSize: isPts ? 15 : 13,
+                              color: isPts
+                                ? (isMe ? '#E33A3A' : '#F5F1E8')
+                                : 'rgba(245,241,232,0.55)',
+                            }}
+                          >
+                            {val}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
-              <div className="px-5 py-4">
+
+              <div className="px-5 py-4 flex items-start gap-4 flex-wrap">
                 <p className="mono" style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.05em' }}>
-                  Tied players share the combined prizes for their positions equally.
+                  B = bonus (pick scored 3+ goals in a match) · Tied players share combined prizes equally.
                 </p>
               </div>
             </div>

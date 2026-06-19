@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Navbar } from '@/components/layout/Navbar';
 import { LeagueDetailClient } from '@/components/pick-six/LeagueDetailClient';
+import { computeEntryStats } from '@/lib/entry-stats';
 import type { Profile } from '@/types';
 
 export default async function LeagueDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,10 +30,14 @@ export default async function LeagueDetailPage({ params }: { params: Promise<{ i
 
   const memberIds = (members ?? []).map(m => m.user_id);
 
-  const [{ data: profilesData }, { data: entriesData }] = await Promise.all([
+  const [{ data: profilesData }, { data: entriesData }, { data: matchesData }] = await Promise.all([
     admin.from('profiles').select('id, first_name, last_name').in('id', memberIds),
     admin.from('pick_six_entries').select('user_id, total_points, team_picks').in('user_id', memberIds),
+    admin.from('matches').select('home_team_code, away_team_code, home_score, away_score').eq('status', 'FINISHED'),
   ]);
+  const finishedMatches = (matchesData ?? []) as {
+    home_team_code: string; away_team_code: string; home_score: number; away_score: number;
+  }[];
 
   const profileMap = Object.fromEntries((profilesData ?? []).map(p => [p.id, p]));
   const entryMap = Object.fromEntries((entriesData ?? []).map(e => [e.user_id, e]));
@@ -40,12 +45,15 @@ export default async function LeagueDetailPage({ params }: { params: Promise<{ i
   const membersWithData = memberIds.map(uid => {
     const p = profileMap[uid] ?? { first_name: 'Unknown', last_name: '' };
     const e = entryMap[uid] ?? { total_points: 0, team_picks: [] };
+    const picks = e.team_picks ?? [];
+    const stats = computeEntryStats(picks, finishedMatches);
     return {
       user_id: uid,
       first_name: p.first_name,
       last_name: p.last_name,
       total_points: e.total_points ?? 0,
-      team_picks: e.team_picks ?? [],
+      team_picks: picks,
+      stats,
     };
   });
 
