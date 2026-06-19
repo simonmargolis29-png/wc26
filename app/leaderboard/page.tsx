@@ -16,7 +16,7 @@ function computeRanks(entries: { total_points: number }[]): number[] {
   return ranks;
 }
 
-const STAT_COLS = ['P', 'W', 'D', 'L', 'B', 'PTS'] as const;
+const STAT_COLS = ['P', 'W', 'D', 'L', 'G', 'PTS'] as const;
 
 export default async function LeaderboardPage() {
   const supabase = await createClient();
@@ -204,7 +204,7 @@ export default async function LeaderboardPage() {
 
               <div className="px-5 py-4 flex items-start gap-4 flex-wrap">
                 <p className="mono" style={{ fontSize: 10, color: 'rgba(245,241,232,0.3)', letterSpacing: '0.05em' }}>
-                  B = bonus (pick scored 3+ goals in a match) · Tied players share combined prizes equally.
+                  G = pick scored 3+ goals in a match · Tied players share combined prizes equally.
                 </p>
               </div>
             </div>

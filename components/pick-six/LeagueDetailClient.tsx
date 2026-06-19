@@ -16,7 +16,7 @@ interface Member {
   stats: EntryStats;
 }
 
-const STAT_COLS = ['P', 'W', 'D', 'L', 'B', 'PTS'] as const;
+const STAT_COLS = ['P', 'W', 'D', 'L', 'G', 'PTS'] as const;
 
 interface Props {
   leagueId: string;
