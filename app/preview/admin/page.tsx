@@ -28,6 +28,7 @@ export default function PreviewAdmin() {
           teamPickCount={mockTeamPickCount}
           sweepstakeId={null}
           sweepstakeDrawn={false}
+          eliminatedTeams={[]}
         />
       </main>
     </div>
