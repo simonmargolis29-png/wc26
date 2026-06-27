@@ -20,6 +20,7 @@ interface Props {
   teamPickCount: Record<string, number>;
   sweepstakeId: string | null;
   sweepstakeDrawn: boolean;
+  eliminatedTeams: string[];
 }
 
 type Tab = 'overview' | 'sweepstake' | 'picksix' | 'users';
@@ -29,12 +30,14 @@ export function AdminClient({
   paidSweepCount, paidPickSixCount, revenue,
   allProfiles, allSweepEntries, allPickSixEntries,
   countryCount, teamPickCount,
-  sweepstakeDrawn,
+  sweepstakeDrawn, eliminatedTeams: initialEliminated,
 }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
   const [drawConfirm, setDrawConfirm] = useState(false);
   const [drawing, setDrawing] = useState(false);
   const [drawError, setDrawError] = useState<string | null>(null);
+  const [eliminated, setEliminated] = useState<string[]>(initialEliminated);
+  const [togglingTeam, setTogglingTeam] = useState<string | null>(null);
   const supabase = createClient();
 
   async function runDraw() {
@@ -56,6 +59,30 @@ export function AdminClient({
   }
 
   const profileById = Object.fromEntries(allProfiles.map(p => [p.id, p]));
+
+  // Derive the teams that were actually drawn in the sweepstake
+  const drawnTeamCodes = [...new Set(
+    allSweepEntries.flatMap(e => {
+      const entry = e as { team_code?: string; team_code_2?: string };
+      return [entry.team_code, entry.team_code_2].filter(Boolean) as string[];
+    })
+  )].sort((a, b) => (teamsByCode[a]?.name ?? a).localeCompare(teamsByCode[b]?.name ?? b));
+
+  async function toggleEliminated(teamCode: string) {
+    setTogglingTeam(teamCode);
+    const isEliminated = eliminated.includes(teamCode);
+    const res = await fetch('/api/admin/eliminate', {
+      method: isEliminated ? 'DELETE' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamCode }),
+    });
+    if (res.ok) {
+      setEliminated(prev =>
+        isEliminated ? prev.filter(c => c !== teamCode) : [...prev, teamCode]
+      );
+    }
+    setTogglingTeam(null);
+  }
 
   async function markPaid(table: string, id: string) {
     await supabase.from(table).update({ payment_status: 'paid' }).eq('id', id);
@@ -250,6 +277,50 @@ export function AdminClient({
               })}
             </div>
           </div>
+
+          {/* Eliminated teams */}
+          {drawnTeamCodes.length > 0 && (
+            <div className="glass-card overflow-hidden mt-6">
+              <div className="px-5 py-3.5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <p className="text-sm font-semibold text-white">Eliminated teams</p>
+                <p className="text-xs text-white/40 mt-0.5">Toggle a team to mark them as knocked out — users will see a strikethrough on their entry.</p>
+              </div>
+              <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                {drawnTeamCodes.map(code => {
+                  const team = teamsByCode[code];
+                  const isEliminated = eliminated.includes(code);
+                  const isToggling = togglingTeam === code;
+                  return (
+                    <div key={code} className="flex items-center px-5 py-3 gap-3">
+                      <span style={{ fontSize: 22 }}>{team?.flag_emoji}</span>
+                      <span
+                        className="flex-1 text-sm"
+                        style={{
+                          color: isEliminated ? 'rgba(255,255,255,0.3)' : '#fff',
+                          textDecoration: isEliminated ? 'line-through' : 'none',
+                        }}
+                      >
+                        {team?.name ?? code}
+                      </span>
+                      <button
+                        onClick={() => toggleEliminated(code)}
+                        disabled={isToggling}
+                        className="text-xs px-3 py-1.5 rounded-full transition-colors"
+                        style={{
+                          background: isEliminated ? 'rgba(74,222,128,0.1)' : 'rgba(227,58,58,0.1)',
+                          color: isEliminated ? '#4ade80' : '#E33A3A',
+                          border: `1px solid ${isEliminated ? 'rgba(74,222,128,0.25)' : 'rgba(227,58,58,0.25)'}`,
+                          opacity: isToggling ? 0.5 : 1,
+                        }}
+                      >
+                        {isToggling ? '...' : isEliminated ? 'Reinstate' : 'Eliminate'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

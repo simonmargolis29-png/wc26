@@ -19,6 +19,7 @@ interface Props {
   existingEntry: SweepstakeEntry | null;
   entryCount: number;
   userId?: string;
+  eliminatedTeams?: string[];
 }
 
 const BANK_DETAILS = {
@@ -63,7 +64,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 
 type Step = 'info' | 'confirm' | 'signup' | 'payment' | 'confirmed';
 
-function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount, userId }: Props) {
+function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount, userId, eliminatedTeams = [] }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const continueToPickSix = searchParams.get('then') === 'my-golden-six';
@@ -226,15 +227,21 @@ function SweepstakeClientInner({ profile, sweepstake, existingEntry, entryCount,
             <div>
               <p className="text-sm mb-4" style={{ color: 'rgba(245,241,232,0.65)' }}>Your drawn teams:</p>
               <div className="flex flex-col gap-4">
-                {[assignedTeam1, assignedTeam2].filter(Boolean).map((team) => team && (
-                  <div key={team.code} className="flex items-center gap-4">
-                    <span style={{ fontSize: 48, lineHeight: 1 }}>{team.flag_emoji}</span>
-                    <div>
-                      <p className="head" style={{ fontSize: 32 }}>{team.name}</p>
-                      <p className="eyebrow mt-1" style={{ color: 'rgba(245,241,232,0.5)' }}>{team.confederation} · Group {team.group_name}</p>
+                {[assignedTeam1, assignedTeam2].filter(Boolean).map((team) => {
+                  if (!team) return null;
+                  const isEliminated = eliminatedTeams.includes(team.code);
+                  return (
+                    <div key={team.code} className="flex items-center gap-4">
+                      <span style={{ fontSize: 48, lineHeight: 1, opacity: isEliminated ? 0.4 : 1 }}>{team.flag_emoji}</span>
+                      <div>
+                        <p className="head" style={{ fontSize: 32, textDecoration: isEliminated ? 'line-through' : 'none', opacity: isEliminated ? 0.4 : 1 }}>{team.name}</p>
+                        <p className="eyebrow mt-1" style={{ color: 'rgba(245,241,232,0.5)' }}>
+                          {isEliminated ? 'Eliminated' : `${team.confederation} · Group ${team.group_name}`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : (

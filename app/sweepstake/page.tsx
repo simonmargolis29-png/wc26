@@ -27,9 +27,12 @@ export default async function SweepstakePage() {
     entry = e as SweepstakeEntry | null;
   }
 
-  const { count } = await supabase.from('sweepstake_entries')
-    .select('*', { count: 'exact', head: true })
-    .eq('sweepstake_id', sweepstake?.id ?? '');
+  const [{ count }, { data: eliminatedData }] = await Promise.all([
+    supabase.from('sweepstake_entries').select('*', { count: 'exact', head: true }).eq('sweepstake_id', sweepstake?.id ?? ''),
+    supabase.from('eliminated_teams').select('team_code'),
+  ]);
+
+  const eliminatedTeams = (eliminatedData ?? []).map((r: { team_code: string }) => r.team_code);
 
   return (
     <div className="min-h-screen">
@@ -41,6 +44,7 @@ export default async function SweepstakePage() {
           existingEntry={entry}
           entryCount={count ?? 0}
           userId={user?.id}
+          eliminatedTeams={eliminatedTeams}
         />
       </main>
     </div>

@@ -24,6 +24,7 @@ export default async function AdminPage() {
     { data: allPickSixEntries },
     { data: countryStats },
     { data: sweepstake },
+    { data: eliminatedData },
   ] = await Promise.all([
     admin.from('profiles').select('*', { count: 'exact', head: true }),
     admin.from('sweepstake_entries').select('*', { count: 'exact', head: true }),
@@ -33,6 +34,7 @@ export default async function AdminPage() {
     admin.from('pick_six_entries').select('*, league:leagues(name, type)').order('total_points', { ascending: false }),
     admin.from('profiles').select('country_of_residence'),
     admin.from('sweepstakes').select('id, status').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    admin.from('eliminated_teams').select('team_code'),
   ]);
 
   // Calculate country distribution
@@ -51,6 +53,7 @@ export default async function AdminPage() {
     });
   });
 
+  const eliminatedTeams = (eliminatedData ?? []).map((r: { team_code: string }) => r.team_code);
   const paidSweepCount = (allSweepEntries ?? []).filter((e: { payment_status?: string }) => e.payment_status === 'paid').length;
   const paidPickSixCount = (allPickSixEntries ?? []).filter((e: { payment_status?: string }) => e.payment_status === 'paid').length;
   const revenue = (paidSweepCount * 5) + (paidPickSixCount * 10);
@@ -73,6 +76,7 @@ export default async function AdminPage() {
           teamPickCount={teamPickCount}
           sweepstakeId={(sweepstake as { id?: string } | null)?.id ?? null}
           sweepstakeDrawn={(sweepstake as { status?: string } | null)?.status === 'drawn'}
+          eliminatedTeams={eliminatedTeams}
         />
       </main>
     </div>
