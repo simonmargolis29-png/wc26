@@ -254,8 +254,14 @@ export function AdminClient({
                     <div className="flex flex-col gap-1">
                       {e.team_code ? (
                         <>
-                          <span className="text-sm">{teamsByCode[e.team_code]?.flag_emoji} {teamsByCode[e.team_code]?.name}</span>
-                          {e.team_code_2 && <span className="text-sm">{teamsByCode[e.team_code_2]?.flag_emoji} {teamsByCode[e.team_code_2]?.name}</span>}
+                          {[e.team_code, e.team_code_2].filter(Boolean).map(code => {
+                            const isOut = eliminated.includes(code!);
+                            return (
+                              <span key={code} className="text-sm" style={{ textDecoration: isOut ? 'line-through' : 'none', opacity: isOut ? 0.4 : 1 }}>
+                                {teamsByCode[code!]?.flag_emoji} {teamsByCode[code!]?.name}
+                              </span>
+                            );
+                          })}
                         </>
                       ) : (
                         <span className="text-xs text-white/30">Not yet drawn</span>
